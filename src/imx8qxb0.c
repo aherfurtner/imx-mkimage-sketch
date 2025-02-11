@@ -707,8 +707,8 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align,
 	 * 8K total container header for legacy container, for version 2
 	 * container, the total container header is 0x4000 * 3 = 0xC000.
 	 */
-	int file_off = cntr_version == 0x2 ? 0xC000 : CONTAINER_IMAGE_ARRAY_START_OFFSET;
-	int container_align = cntr_version == 0x2 ? 0x4000 : CONTAINER_ALIGNMENT;
+	int file_off = cntr_version ? 0xC000 : CONTAINER_IMAGE_ARRAY_START_OFFSET;
+	int container_align = cntr_version ? 0x4000 : CONTAINER_ALIGNMENT;
 
 	flash_header_v3_t header;
 
