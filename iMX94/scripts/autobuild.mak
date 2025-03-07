@@ -1,6 +1,3 @@
-ROOTDIR ?= repository/Linux_Factory_Daily_Build
-BUILD ?= Linux_IMX943_Bringup
-
 include ../scripts/autobuild_common.mak
 
 ifeq ($(V),1)
@@ -63,7 +60,9 @@ core_files:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/oei-m33-ddr.bin -O oei-m33-ddr.bin
 #	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/oei-m33-tcm.bin -O oei-m33-tcm.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/m33_image-mx94evk.bin -O m33_image.bin
-#	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/m7_image.bin -O m7_image.bin
+	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/m70_image.bin -O m70_image.bin
+	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/m71_image.bin -O m71_image.bin
+	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/m33s_image.bin -O m33s_image.bin
 	$(AT)$(RWGET) $(SERVER)/$(DIR)/imx_dtbs -P boot -A "$(DTB)*.dtb"
-#	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-$(BOARD).bin -O Image
-#	$(AT)mv -f Image boot
+	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx943evk.bin -O Image
+	$(AT)mv -f Image boot
