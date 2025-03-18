@@ -1,7 +1,7 @@
 MKIMG = ../mkimage_imx8
 
 CC ?= gcc
-REV ?= A0
+REV ?= A1
 OEI ?= NO
 MSEL ?= 0
 CFLAGS ?= -O2 -Wall -std=c99
@@ -27,7 +27,13 @@ endif
 
 LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 
-AHAB_IMG = mx95$(LC_REVISION)-ahab-container.img
+ifeq ($(LC_REVISION),a1)
+ELE_REVISION := a0
+else
+ELE_REVISION := $(LC_REVISION)
+endif
+
+AHAB_IMG = mx95$(ELE_REVISION)-ahab-container.img
 SPL_LOAD_ADDR ?= 0x4aa00000		# For singleboot, non-SCMI SPL, use NPU SRAM
 SPL_LOAD_ADDR_M33_VIEW ?= 0x20480000 	# For lpboot, SCMI SPL
 ATF_LOAD_ADDR ?= 0x8A200000

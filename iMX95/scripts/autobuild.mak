@@ -6,6 +6,8 @@ else
 AT := @
 endif
 
+LCD_REVISION = -$(LC_REVISION)
+
 # Aliases
 nightly : nightly_evk
 nightly_mek: nightly_evk
@@ -17,7 +19,7 @@ nightly_mx95evk15: nightly_mx95-15x15-lpddr4x-evk
 nightly_verdin: nightly_mx95verdin
 
 # MX95 19x19 LPDDR5 EVK
-nightly_mx95-19x19-lpddr5-evk: BOARD = $(CPU)-19x19-$(DDR)-evk
+nightly_mx95-19x19-lpddr5-evk: BOARD = $(CPU)$(LCD_REVISION)-19x19-$(DDR)-evk
 nightly_mx95-19x19-lpddr5-evk: DTB = imx95-19x19-evk
 nightly_mx95-19x19-lpddr5-evk: CPU = imx95
 nightly_mx95-19x19-lpddr5-evk: DDR = lpddr5
@@ -26,7 +28,7 @@ nightly_mx95-19x19-lpddr5-evk: M7_FILE = $(DTB)_m7_TCM_power_mode_switch.bin
 nightly_mx95-19x19-lpddr5-evk: core_files
 
 # MX95 15x15 LPDDR4X EVK
-nightly_mx95-15x15-lpddr4x-evk: BOARD = $(CPU)-15x15-$(DDR)-evk
+nightly_mx95-15x15-lpddr4x-evk: BOARD = $(CPU)$(LCD_REVISION)-15x15-$(DDR)-evk
 nightly_mx95-15x15-lpddr4x-evk: DTB = imx95-15x15-evk
 nightly_mx95-15x15-lpddr4x-evk: CPU = imx95
 nightly_mx95-15x15-lpddr4x-evk: DDR = lpddr4x
@@ -35,7 +37,7 @@ nightly_mx95-15x15-lpddr4x-evk: M7_FILE = $(DTB)_m7_TCM_power_mode_switch.bin
 nightly_mx95-15x15-lpddr4x-evk: core_files
 
 # MX95 19x19 Verdin
-nightly_mx95verdin: BOARD = $(CPU)-19x19-verdin
+nightly_mx95verdin: BOARD = $(CPU)$(LCD_REVISION)-19x19-verdin
 nightly_mx95verdin: DTB = imx95-verdin-evk
 nightly_mx95verdin: CPU = imx95
 nightly_mx95verdin: DDR = lpddr5
@@ -60,5 +62,5 @@ core_files:
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/oei-m33-tcm.bin -O oei-m33-tcm.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/m33_image-mx95evk.bin -O m33_image.bin
 	$(AT)$(WGET) -q $(SERVER)/$(DIR)/imx-boot/imx-boot-tools/$(BOARD)/$(M7_FILE) -O m7_image.bin
-	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx95evk.bin -O Image
+	$(AT)$(WGET) -q $(SERVER)/$(DIR)/Image-imx95$(LC_REVISION)evk.bin -O Image
 	$(AT)mv -f Image boot
