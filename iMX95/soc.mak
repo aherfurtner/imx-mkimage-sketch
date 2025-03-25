@@ -27,6 +27,10 @@ endif
 
 LC_REVISION = $(shell echo $(REV) | tr ABC abc)
 
+ifeq ($(LC_REVISION),a0)
+LC_REVISION := a1
+endif
+
 ifeq ($(LC_REVISION),a1)
 ELE_REVISION := a0
 else
@@ -407,7 +411,7 @@ flash_all_ap: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) $(AP_IMG) $(OEI_IMG_M33)
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c -sentinel ahabfw.bin -out flash.bin
 
-ifneq ($(REV),B0)
+ifneq ($(LC_REVISION),b0)
 prepare_kernel_chunks: Image
 	./$(SPLIT_KERNEL) Image $(KERNEL_ADDR) 0x700000
 

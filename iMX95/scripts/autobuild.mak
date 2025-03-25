@@ -6,7 +6,11 @@ else
 AT := @
 endif
 
+ifeq ($(LC_REVISION),a1)
 LCD_REVISION = -$(LC_REVISION)
+else
+LCD_REVISION = 
+endif
 
 # Aliases
 nightly : nightly_evk
