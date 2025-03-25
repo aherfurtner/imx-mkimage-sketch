@@ -52,6 +52,7 @@ V2X ?= $(OEI)
 
 FCB_LOAD_ADDR ?= 0x204D7000 #top 4K for fcb
 V2X_DDR = 0x8b000000
+V2X_DUMMY_OCRAM = 0x20480000
 MCU_IMG ?= m33_image.bin
 M7_IMG ?= m7_image.bin
 TEE ?= tee.bin
@@ -153,6 +154,7 @@ else
 ifeq ($(V2X),YES)
 $(error "V2X without OEI is not allowed as V2X FW resides in DDR")
 endif
+V2X_DUMMY = -dummy ${V2X_DUMMY_OCRAM}
 endif
 
 ###########################
@@ -405,7 +407,7 @@ flash_all_ap: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M7_IMG) $(AP_IMG) $(OEI_IMG_M33)
 flash_sentinel: $(MKIMG) ahabfw.bin
 	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -c -sentinel ahabfw.bin -out flash.bin
 
-ifeq ($(REV),A0)
+ifneq ($(REV),B0)
 prepare_kernel_chunks: Image
 	./$(SPLIT_KERNEL) Image $(KERNEL_ADDR) 0x700000
 
