@@ -56,7 +56,6 @@ V2X ?= $(OEI)
 
 FCB_LOAD_ADDR ?= 0x204D7000 #top 4K for fcb
 V2X_DDR = 0x8b000000
-V2X_DUMMY_OCRAM = 0x20480000
 MCU_IMG ?= m33_image.bin
 M7_IMG ?= m7_image.bin
 TEE ?= tee.bin
@@ -158,7 +157,15 @@ else
 ifeq ($(V2X),YES)
 $(error "V2X without OEI is not allowed as V2X FW resides in DDR")
 endif
-V2X_DUMMY = -dummy ${V2X_DUMMY_OCRAM}
+ifneq ($(LC_REVISION),b0)
+V2X_DUMMY_NPUSRAM = 0x4AA00000
+V2X_DUMMY = -dummy ${V2X_DUMMY_NPUSRAM}
+#A0/A1 needs M7 OEI even in OEI=NO case when trying to load M7 TCM image
+OEI_M33_TCM_IMG ?= oei-m33-tcm.bin
+OEI_OPT_M33 += -oei $(OEI_M33_TCM_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
+OEI_IMG_M33 += $(OEI_M33_TCM_IMG)
+endif
+
 endif
 
 ###########################
