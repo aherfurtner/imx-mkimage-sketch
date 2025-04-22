@@ -52,6 +52,7 @@
 #define DCD_ENTRY_ADDR_IN_SCFW		0x240
 
 #define CONTAINER_ALIGNMENT		0x400
+#define CONTAINER_PQC_ALIGNMENT		0x4000
 #define CONTAINER_FUSE_DEFAULT		0x0
 
 #define SIGNATURE_BLOCK_HEADER_LENGTH	0x10
@@ -708,7 +709,7 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align,
 	 * container, the total container header is 0x4000 * 3 = 0xC000.
 	 */
 	int file_off = cntr_version ? 0xC000 : CONTAINER_IMAGE_ARRAY_START_OFFSET;
-	int container_align = cntr_version ? 0x4000 : CONTAINER_ALIGNMENT;
+	int container_align = cntr_version ? CONTAINER_PQC_ALIGNMENT : CONTAINER_ALIGNMENT;
 
 	flash_header_v3_t header;
 
@@ -742,6 +743,13 @@ int get_container_image_start_pos(image_t *image_stack, uint32_t align,
 					printf("image num is 0 \n");
 					break;
 				} else {
+					/* Check ELE container Revision for alignment, V2X container uses same alignment*/
+					if (header.tag == IVT_HEADER_TAG_B0) {
+						if (header.version == 2)
+							container_align = CONTAINER_PQC_ALIGNMENT;
+						else
+							container_align = CONTAINER_ALIGNMENT;
+					}
 					file_off = header.img[header.num_images - 1].offset + header.img[header.num_images - 1].size;
 					*scu_cont_hdr_off = i * container_align + ALIGN(header.length, container_align);
 					file_off += i * container_align;
@@ -905,7 +913,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case NEW_CONTAINER:
 			container++;
 			set_container(&imx_header.fhdr[container], sw_version,
-					cntr_version ? 0x4000 : CONTAINER_ALIGNMENT,
+					cntr_version ? CONTAINER_PQC_ALIGNMENT : CONTAINER_ALIGNMENT,
 					cntr_flags,
 					fuse_version);
 			cont_img_count = 0; /* reset img count when moving to new container */
