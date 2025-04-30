@@ -130,6 +130,8 @@ OEI_OPT_M33 += $(DDR_DUMMY) -oei $(M33_OEI_DDRFW) m33 $(OEI_M33_ENTR_ADDR) $(OEI
 OEI_OPT_M33 += -hold 65536 $(OEI_DDR_QB_DATA)
 OEI_IMG_M33 += $(M33_OEI_DDRFW) $(OEI_DDR_QB_DATA)
 endif
+
+ifneq ($(LC_REVISION),b0) # No need to include M7 TCM init OEI for B0
 ifneq (,$(wildcard $(OEI_A55_TCM_IMG)))
 OEI_OPT_A55 += -oei $(OEI_A55_TCM_IMG) a55 $(OEI_A55_ENTR_ADDR) $(OEI_A55_LOAD_ADDR)
 OEI_IMG_A55 += $(OEI_A55_TCM_IMG)
@@ -138,6 +140,7 @@ ifneq (,$(wildcard $(OEI_M33_TCM_IMG)))
 OEI_OPT_M33 += -oei $(OEI_M33_TCM_IMG) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
 OEI_IMG_M33 += $(OEI_M33_TCM_IMG)
 endif
+endif # No need to include M7 TCM init OEI for B0
 
 ifeq (,$(OEI_IMG_M33))
 $(warning "Note: There are no Cortex-M33 oei images")
