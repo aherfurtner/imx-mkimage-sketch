@@ -402,7 +402,7 @@ uint32_t get_hash_algo(char *images_hash)
 	if (NULL != images_hash) {
 	    if (0 == strcmp(images_hash, HASH_STR_SHA_256)) {
 			hash_algo = HASH_TYPE_SHA_256;
-			hash_name = HASH_STR_SHA_256; 
+			hash_name = HASH_STR_SHA_256;
 		}
 		else if (0 == strcmp(images_hash, HASH_STR_SHA_384)) {
 			hash_algo = HASH_TYPE_SHA_384;
@@ -626,6 +626,14 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 		tmp_name = "DATA";
 		img->dst = entry;
 		break;
+	case RECOVERY:
+		img->hab_flags |= IMG_TYPE_RECOVERY;
+		img->hab_flags |= core << BOOT_IMG_FLAGS_CORE_SHIFT;
+		tmp_name = "RECOVERY";
+		img->dst = entry;
+		img->entry = entry;
+		img->meta = CORE_IMX95_A55C0;
+		break;
 	case MSG_BLOCK:
 		img->hab_flags |= IMG_TYPE_DATA;
 		img->hab_flags |= CORE_CA35 << BOOT_IMG_FLAGS_CORE_SHIFT;
@@ -830,6 +838,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case UPOWER:
 		case MSG_BLOCK:
 		case SENTINEL:
+		case RECOVERY:
 			if (container < 0) {
 				fprintf(stderr, "No container found\n");
 				exit(EXIT_FAILURE);
@@ -1009,6 +1018,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case FCB:
 		case OEI:
 		case M7:
+		case RECOVERY:
 			copy_file_aligned(ofd, img_sp->filename, img_sp->src, sector_size);
 			break;
 		case HOLD:

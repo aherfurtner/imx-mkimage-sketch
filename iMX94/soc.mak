@@ -41,6 +41,11 @@ V2X ?= $(OEI)
 KERNEL_DTB ?= imx943-evk.dtb  #Used by kernel authentication
 KERNEL_DTB_ADDR ?= 0x93000000
 KERNEL_ADDR ?= 0x90400000
+KERNEL_INITRD_ADDR ?= 0x93800000
+
+RECOVERY_DTB ?= imx943-evk-crrm.dtb
+RECOVERY_IMG ?= Image_crrm.gz
+RECOVERY_FS ?= initramfs.cpio.zst.u-boot
 
 FCB_LOAD_ADDR ?= 0x204D7000 #top 4K for fcb
 V2X_DDR = 0x8b000000
@@ -220,6 +225,40 @@ u-boot-atf-container-spinand.img: bl31.bin u-boot-hash.bin
 			   -out u-boot-atf-container-spinand.img; \
 	fi
 
+crrm-container.img: bl31.bin u-boot-hash.bin Image.gz $(KERNEL_DTB)
+	if [ -f $(TEE) ]; then \
+		if [ $(shell echo $(ROLLBACK_INDEX_IN_CONTAINER)) ]; then \
+			./$(MKIMG) -soc IMX9 -sw_version $(ROLLBACK_INDEX_IN_CONTAINER) \
+				   -cntr_version 2 -u 1 -c \
+				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
+				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
+				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) \
+				   -ap Image.gz a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) \
+				   -recovery $(RECOVERY_IMG) a55 $(KERNEL_ADDR) \
+				   -recovery $(RECOVERY_DTB) a55 $(KERNEL_DTB_ADDR) \
+				   -recovery $(RECOVERY_FS) a55 $(KERNEL_INITRD_ADDR) \
+				   -out crrm-container.img; \
+		else \
+			./$(MKIMG) -soc IMX9 -cntr_version 2 -u 1 -c \
+				   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
+				   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
+				   -ap Image.gz a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) \
+				   -recovery $(RECOVERY_IMG) a55 $(KERNEL_ADDR) \
+				   -recovery $(RECOVERY_DTB) a55 $(KERNEL_DTB_ADDR) \
+				   -recovery $(RECOVERY_FS) a55 $(KERNEL_INITRD_ADDR) \
+				   -ap $(TEE) a55 $(TEE_LOAD_ADDR) -out crrm-container.img; \
+		fi; \
+	else \
+		./$(MKIMG) -soc IMX9 -cntr_version 2 -u 1 -c \
+			   -ap bl31.bin a55 $(ATF_LOAD_ADDR) \
+			   -ap u-boot-hash.bin a55 $(UBOOT_LOAD_ADDR) \
+			   -ap Image.gz a55 $(KERNEL_ADDR) --data $(KERNEL_DTB) a55 $(KERNEL_DTB_ADDR) \
+			   -recovery $(RECOVERY_IMG) a55 $(KERNEL_ADDR) \
+			   -recovery $(RECOVERY_DTB) a55 $(KERNEL_DTB_ADDR) \
+			   -recovery $(RECOVERY_FS) a55 $(KERNEL_INITRD_ADDR) \
+			   -out crrm-container.img; \
+	fi
+
 fcb.bin: FORCE
 	./$(QSPI_FCB_GEN) $(QSPI_HEADER)
 
@@ -245,6 +284,14 @@ flash_a55_xspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) fcb.bin u-boot-atf-container.img
 		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
 	$(call append_container,u-boot-atf-container.img,1)
 	$(call append_fcb)
+
+flash_a55_xspi_crrm: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) fcb.bin crrm-container.img $(SPL_A55_IMG) $(OEI_IMG_M33) $(OEI_M33_DDR_IMG)
+	./$(MKIMG) -soc IMX9 -cntr_version 2 -u 1 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -ap $(SPL_A55_IMG) a55 $(SPL_LOAD_ADDR_M33_VIEW) $(V2X_DUMMY) -out flash.bin
+	$(call append_container,crrm-container.img,1)
+	$(call append_fcb)
+
 
 ## AHAB_IMG shall include both ELE and V2X containers ##
 flash_a55_xspi_oem_fastboot: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(SPL_A55_IMG) $(OEI_IMG_M33) fcb.bin u-boot-atf-container.img

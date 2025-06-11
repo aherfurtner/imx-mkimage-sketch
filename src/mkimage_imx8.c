@@ -653,6 +653,7 @@ int main(int argc, char **argv)
 		{"cntr_version", required_argument, NULL, 'V'},
 		{"cntr_flags", required_argument, NULL, 'F'},
 		{"ddr_dummy", no_argument, NULL, 'Y'},
+		{"recovery", required_argument, NULL, 'C'},
 		{NULL, 0, NULL, 0}
 	};
 
@@ -802,6 +803,31 @@ int main(int argc, char **argv)
 					p_idx++;
 				} else {
 					fprintf(stderr, "\n-data option is only used with -rev B0, or DXL or ULP or IMX9 soc.\n\n");
+					exit(EXIT_FAILURE);
+				}
+				break;
+			case 'C':
+				if (soc == IMX9) {
+					fprintf(stdout, "Recovery:\t%s", optarg);
+					param_stack[p_idx].option = RECOVERY;
+					param_stack[p_idx].filename = optarg;
+					if ((optind < argc && *argv[optind] != '-') && (optind+1 < argc && *argv[optind+1] != '-' )) {
+						if (!strncmp(argv[optind], "a55", 3))
+							param_stack[p_idx].ext = CORE_CA53;
+						else {
+							fprintf(stderr, "ERROR: incorrect core ID for --data option: %s\n", argv[optind]);
+							exit(EXIT_FAILURE);
+						}
+						fprintf(stdout, "\tcore: %s\n", argv[optind++]);
+						param_stack[p_idx].entry = (uint32_t) strtoll(argv[optind++], NULL, 0);
+					}
+					else {
+						fprintf(stderr, "\n-data option require THREE arguments: filename, core: a55 load address in hex\n\n");
+						exit(EXIT_FAILURE);
+					}
+					p_idx++;
+				} else {
+					fprintf(stderr, "\n-data option is only used with IMX9 soc.\n\n");
 					exit(EXIT_FAILURE);
 				}
 				break;
