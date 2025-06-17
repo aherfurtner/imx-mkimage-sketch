@@ -695,12 +695,13 @@ void set_image_array_entry(flash_header_v3_t *container, soc_type_t soc,
 }
 
 void set_container(flash_header_v3_t *container,  uint16_t sw_version,
-			uint32_t alignment, uint32_t flags, uint16_t fuse_version)
+			uint8_t cntr_version, uint32_t flags, uint16_t fuse_version)
 {
 	container->sig_blk_hdr.tag = 0x90;
+	container->sig_blk_hdr.version = cntr_version == 0x2 ? 0x1: 0x0;
 	container->sig_blk_hdr.length = sizeof(sig_blk_hdr_t);
 	container->sw_version = sw_version;
-	container->padding = alignment;
+	container->padding = cntr_version ? CONTAINER_PQC_ALIGNMENT : CONTAINER_ALIGNMENT;
 	container->fuse_version = fuse_version;
 	container->flags = flags;
 	printf("flags: 0x%x\n", container->flags);
@@ -922,7 +923,7 @@ int build_container_qx_qm_b0(soc_type_t soc, uint32_t sector_size, uint32_t ivt_
 		case NEW_CONTAINER:
 			container++;
 			set_container(&imx_header.fhdr[container], sw_version,
-					cntr_version ? CONTAINER_PQC_ALIGNMENT : CONTAINER_ALIGNMENT,
+					cntr_version,
 					cntr_flags,
 					fuse_version);
 			cont_img_count = 0; /* reset img count when moving to new container */
