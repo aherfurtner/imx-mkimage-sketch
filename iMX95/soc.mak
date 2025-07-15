@@ -53,6 +53,8 @@ KERNEL_DTB ?= imx95-19x19-evk.dtb   # Used by kernel authentication
 KERNEL_DTB_ADDR ?= 0x93000000
 KERNEL_ADDR ?= 0x90400000
 V2X ?= $(OEI)
+# This Capsule_GUID is reserved by NXP
+CAPSULE_GUID ?= 2c4db6b3-0b15-4a36-beae-1ea135464f5b
 
 FCB_LOAD_ADDR ?= 0x204D7000 #top 4K for fcb
 V2X_DDR = 0x8b000000
@@ -308,6 +310,24 @@ clean:
 	@rm -f $(MKIMG) u-boot-atf-container.img u-boot-spl-ddr-v2.bin m33-oei-ddrfw.bin a55-oei-ddrfw.bin u-boot-hash.bin flash.bin head.hash boot-spl-container.img
 	@rm -rf extracted_imgs
 	@echo "imx95 clean done"
+
+# Add for System ready
+ifeq ($(TEE),tee.bin-stmm)
+overlay: u-boot.bin
+	./$(MKIMG) -soc IMX9 -split u-boot.bin
+	dtc -@ -I dts -O dtb -o signature.dtbo signature.dts
+	fdtoverlay -i gen-uboot.dtb -o gen-uboot.dtb signature.dtbo
+	@cat gen-u-boot-nodtb.bin gen-uboot.dtb > gen-u-boot.bin
+	@mv -f gen-u-boot.bin u-boot.bin
+
+flash_lpboot_sm_all_stmm_capsule: overlay flash_lpboot_sm_all
+	./mkeficapsule flash.bin --monotonic-count 1 \
+		--guid $(CAPSULE_GUID) \
+		--private-key CRT.key \
+		--certificate CRT.crt \
+		--index 1 --instance 0 \
+		capsule1.bin
+endif
 
 flash_lpboot: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(OEI_IMG_M33)
 	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) $(MMC_FAST_HASH) -append $(AHAB_IMG) -c $(OEI_OPT_M33) \
