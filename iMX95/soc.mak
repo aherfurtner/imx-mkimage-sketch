@@ -47,7 +47,7 @@ MCU_TCM_ADDR_ACORE_VIEW ?= 0x201C0000
 LPDDR_TYPE ?= lpddr5
 LPDDR_FUNC ?= train
 LPDDR_FW_VERSION ?= _v202409
-SPL_A55_IMG ?= u-boot-spl-ddr-v2.bin
+SPL_A55_IMG ?= u-boot-spl.bin	# SPL without ddrfw
 AP_IMG ?= ap.bin
 KERNEL_DTB ?= imx95-19x19-evk.dtb   # Used by kernel authentication
 KERNEL_DTB_ADDR ?= 0x93000000
@@ -151,8 +151,6 @@ endif
 ifeq (,$(OEI_IMG_A55))
 $(warning "Note: There are no Cortex-A55 oei images")
 endif
-
-SPL_A55_IMG = u-boot-spl.bin	# SPL without ddrfw
 
 ifeq ($(V2X),YES)
 	V2X_DUMMY = -dummy ${V2X_DDR}
