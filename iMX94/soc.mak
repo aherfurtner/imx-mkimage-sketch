@@ -59,6 +59,7 @@ M71_TCM_ADDR_ALIAS ?= 0x302C0000
 
 M33S_TCM_ADDR ?= 0x1FFC0000
 M33S_TCM_ADDR_ALIAS ?= 0x309C0000
+M33S_DDR_ADDR ?= 0x86000000
 
 MCU_IMG = m33_image.bin
 M70_IMG = m70_image.bin
@@ -438,6 +439,11 @@ flash_m33s: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M33S_IMG) $(OEI_IMG_M33)
 	./$(MKIMG) -soc IMX9 -cntr_version 2 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
 		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
 		   -m33 $(M33S_IMG) 1 $(M33S_TCM_ADDR) $(M33S_TCM_ADDR_ALIAS) -out flash.bin
+
+flash_m33s_ddr: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M33S_IMG) $(OEI_IMG_M33)
+	./$(MKIMG) -soc IMX9 -cntr_version 2 -append $(AHAB_IMG) -c $(OEI_OPT_M33) -msel $(MSEL) \
+		   -m33 $(MCU_IMG) 0 $(MCU_TCM_ADDR) \
+		   -m33 $(M33S_IMG) 1 $(M33S_DDR_ADDR) $(M33S_DDR_ADDR) -out flash.bin
 
 flash_m33s_xspi: $(MKIMG) $(AHAB_IMG) $(MCU_IMG) $(M33S_IMG) $(OEI_IMG_M33)
 	./$(MKIMG) -soc IMX9 -cntr_version 2 -append $(AHAB_IMG) -dev flexspi -c $(OEI_OPT_M33) -msel $(MSEL) \
