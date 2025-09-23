@@ -480,6 +480,7 @@ flash_alt: flash_a55
 flash_jailhouse: flash_a55
 flash_netc: flash_lpboot_sm_all
 flash_evk: flash_lpboot_sm_all
+flash_all_ecc: flash_all
 
 flash_singleboot: $(MKIMG) $(AHAB_IMG) $(SPL_A55_IMG) u-boot-atf-container.img $(OEI_IMG_A55)
 	./$(MKIMG) -soc IMX9 -cntr_version $(CTNR_VERSION) -append $(AHAB_IMG) -c $(OEI_OPT_A55) \

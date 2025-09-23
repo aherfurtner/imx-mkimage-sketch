@@ -552,6 +552,8 @@ parse_container: $(MKIMG) flash.bin
 extract: $(MKIMG) flash.bin
 	./$(MKIMG) -soc IMX9 -cntr_version 2 -extract flash.bin
 
+flash_all_ecc: flash_all
+
 ifneq ($(wildcard ../$(SOC_DIR)/scripts/autobuild.mak),)
 $(info include autobuild.mak)
 include ../$(SOC_DIR)/scripts/autobuild.mak
