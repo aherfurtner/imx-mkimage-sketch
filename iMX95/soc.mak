@@ -81,13 +81,49 @@ CTNR_VERSION ?= 0
 DDR_DUMMY =
 endif
 
+GDET ?= 0
+VDET ?= 0
+AGDET ?= 0
+FDET ?= 0
+
+ifeq ($(shell test $(GDET) -gt 2 && echo true), true)
+$(error "GDET value should be 0 to 2, 0 is enabled, 1 is disabled, 2 is enabled in ELE call")
+endif
+
+ifeq ($(shell test $(VDET) -gt 3 && echo true), true)
+$(error "VDET value should be 0 to 3, 0 is enabled, 1 is disabled, 2 is enabled in ELE call, 3 is enabled and kept enabled in suspend")
+endif
+
+ifeq ($(shell test $(AGDET) -gt 3 && echo true), true)
+$(error "AGDET value should be 0 to 3, 0 is enabled, 1 is disabled, 2 is enabled in ELE call, 3 is enabled and kept enabled in suspend")
+endif
+
+ifeq ($(shell test $(FDET) -gt 1 && echo true), true)
+$(error "FDET value should be 0 to 1, 0 is enabled, 1 is disabled")
+endif
+
+FLAG_GDET = $(shell echo $$(( $(GDET) << 20 )))
+FLAG_VDET = $(shell echo $$(( $(VDET) << 22 )))
+FLAG_AGDET = $(shell echo $$(( $(AGDET) << 24 )))
+FLAG_FDET = $(shell echo $$(( $(FDET) << 26 )))
+FLAG_DET_ALL = $(shell echo $$(( $(FLAG_GDET) + $(FLAG_VDET) + $(FLAG_AGDET) + $(FLAG_FDET) )))
+
+ifneq ($(FLAG_DET_ALL),0)
+FLAG_DEF = 0x10
+CNTR_FLAG = -cntr_flags $(shell printf "0x%X\n" $$(( $(FLAG_DET_ALL) + $(FLAG_DEF) )))
+else
+CNTR_FLAG =
+endif
+
 FAST_HASH ?=
 ifeq ($(FAST_HASH),YES)
-MMC_FAST_HASH = -cntr_flags 0x20010
-XSPI_FAST_HASH = -cntr_flags 0x30010
+FLAG_MMC_FH = 0x20010
+FLAG_XSPI_FH = 0x30010
+MMC_FAST_HASH = -cntr_flags $(shell printf "0x%X\n" $$(( $(FLAG_DET_ALL) + $(FLAG_MMC_FH) )))
+XSPI_FAST_HASH = -cntr_flags $(shell printf "0x%X\n" $$(( $(FLAG_DET_ALL) + $(FLAG_XSPI_FH) )))
 else
-MMC_FAST_HASH = 
-XSPI_FAST_HASH = 
+MMC_FAST_HASH = $(CNTR_FLAG)
+XSPI_FAST_HASH = $(CNTR_FLAG)
 endif
 
 OEI_A55_LOAD_ADDR ?= 0x20498000
