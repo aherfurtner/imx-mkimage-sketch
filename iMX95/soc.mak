@@ -131,6 +131,10 @@ OEI_A55_ENTR_ADDR ?= $(OEI_A55_LOAD_ADDR)
 OEI_M33_LOAD_ADDR ?= 0x1ffc0000
 OEI_M33_ENTR_ADDR ?= 0x1ffc0001	# = real entry address (0x1ffc0000) + 1
 
+OEI_M33_DDRCONF_ADDR ?= 0x4aa10000 # Use NPU RAM for DDR configs - offset 0x1000 to 0xd000 OK
+#OEI_M33_DDRCONF_ADDR ?= 0x4aa00000 # Use NPU RAM for DDR configs - offset 0x0, reboots after OEI exit
+#OEI_M33_DDRCONF_ADDR ?= 0x4aae0000 # Use NPU RAM for DDR configs - offset 0xe000, seem to hang on QB data load
+
 OEI_OPT_A55 ?=
 OEI_OPT_M33 ?=
 
@@ -152,6 +156,8 @@ A55_OEI_DDRFW = a55-oei-ddrfw.bin
 M33_OEI_DDRFW = m33-oei-ddrfw.bin
 OEI_QBDATA_FILE = qb_data.bin
 
+M33_OEI_DDRCONF = oei-m33-ddrconf.bin
+
 ifneq (,$(wildcard $(OEI_QBDATA_FILE)))
 OEI_DDR_QB_DATA = $(OEI_QBDATA_FILE)
 else
@@ -164,9 +170,10 @@ OEI_OPT_A55 += -hold 65536 $(OEI_DDR_QB_DATA)
 OEI_IMG_A55 += $(A55_OEI_DDRFW) $(OEI_DDR_QB_DATA)
 endif
 ifneq (,$(wildcard $(OEI_M33_DDR_IMG)))
+OEI_OPT_M33 += -data $(M33_OEI_DDRCONF) m33 $(OEI_M33_DDRCONF_ADDR)
 OEI_OPT_M33 += $(DDR_DUMMY) -oei $(M33_OEI_DDRFW) m33 $(OEI_M33_ENTR_ADDR) $(OEI_M33_LOAD_ADDR)
 OEI_OPT_M33 += -hold 65536 $(OEI_DDR_QB_DATA)
-OEI_IMG_M33 += $(M33_OEI_DDRFW) $(OEI_DDR_QB_DATA)
+OEI_IMG_M33 += $(M33_OEI_DDRFW) $(OEI_DDR_QB_DATA) $(M33_OEI_DDRCONF)
 endif
 
 ifneq ($(LC_REVISION),b0) # No need to include M7 TCM init OEI for B0
@@ -257,6 +264,10 @@ define append_ddrfw_v3
 	@dd if=$(2).unaligned of=$(2) bs=8 conv=sync
 	@rm -f $(1)-pad $(2).unaligned fw-header.bin fw-header-qb.bin
 endef
+
+# Create a dummy DDR config file filled with 0xcc for test purpose.
+oei-m33-ddrconf.bin:
+	@dd if=/dev/zero bs=1K count=64 | tr '\000' '\314' > $@
 
 a55-oei-ddrfw.bin: $(OEI_A55_DDR_IMG) $(lpddr_imem) $(lpddr_dmem) fw-header.bin $(lpddr_imem_qb) $(lpddr_dmem_qb) fw-header-qb.bin
 	$(call append_ddrfw_v3,$(OEI_A55_DDR_IMG),a55-oei-ddrfw.bin)
